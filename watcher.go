@@ -85,6 +85,8 @@ func watchQuote(symbol string, frequency time.Duration, nasdaqChan chan NasdaqQu
 func main() {
 	symbol := flag.String("symbol", "AMD", "NASDAQ symbol")
 	frequency := flag.Duration("frequency", 2*time.Second, "update frequency (i.e. 2s or 500ms)")
+	flag.Parse()
+
 	nasdaqChan := make(chan NasdaqQuote)
 
 	go watchQuote(*symbol, *frequency, nasdaqChan)

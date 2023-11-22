@@ -1,0 +1,7 @@
+.idea
+
+/**/go.sum
+/**/go.work
+/**/go.work.sum
+
+/**/*.pb.go

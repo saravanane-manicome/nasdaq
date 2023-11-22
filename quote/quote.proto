@@ -1,0 +1,17 @@
+syntax="proto3";
+package quote;
+option go_package="./quote";
+
+service QuoteService {
+  rpc getQuote (QuoteRequest) returns (QuoteReply) {}
+}
+
+message QuoteRequest {
+  string symbol = 1;
+}
+
+message QuoteReply {
+  string symbol = 1;
+  double quote = 2;
+  bool exists = 3;
+}

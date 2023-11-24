@@ -14,16 +14,20 @@ func requestQuote(symbol string) func(quote.QuoteServiceClient, context.Context)
 	return func(client quote.QuoteServiceClient, context context.Context) (*Quote, error) {
 		r, err := client.GetQuote(context, &quote.QuoteRequest{Symbol: symbol})
 		if err != nil {
-			responseStatus, ok := status.FromError(err)
-			if ok && responseStatus.Code() == codes.NotFound {
-				return nil, nil
-			}
-			log.Printf("could not request pb: %v\n", err)
-			return nil, err
+			return handleRequestError(err)
 		}
 
 		return &Quote{r.GetSymbol(), r.GetQuote()}, nil
 	}
+}
+
+func handleRequestError(err error) (*Quote, error) {
+	responseStatus, ok := status.FromError(err)
+	if ok && responseStatus.Code() == codes.NotFound {
+		return nil, nil
+	}
+	log.Printf("could not request pb: %v\n", err)
+	return nil, err
 }
 
 func setupClient(addr string) (quote.QuoteServiceClient, context.Context, func()) {

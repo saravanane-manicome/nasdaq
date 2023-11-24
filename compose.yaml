@@ -1,0 +1,29 @@
+services:
+  nasdaq-provider:
+    container_name: nasdaq-provider
+    build:
+      dockerfile: Dockerfile.provider
+    environment:
+      PROVIDER_PORT: 50051
+    ports:
+      - 50051:50051
+    networks:
+      - nasdaq
+
+  nasdaq-rest:
+    depends_on:
+      - nasdaq-provider
+    container_name: nasdaq-rest
+    build:
+      dockerfile: Dockerfile.rest
+    environment:
+      PROVIDER_HOST: "nasdaq-provider"
+      PROVIDER_PORT: 50051
+    ports:
+      - 8080:8080
+    networks:
+      - nasdaq
+
+networks:
+  nasdaq:
+    name: nasdaq

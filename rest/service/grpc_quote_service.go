@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	pb "github.com/saravanane-manicome/nasdaq/quote"
+	"github.com/saravanane-manicome/nasdaq/rest/protobuf/quote"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -10,15 +10,15 @@ import (
 	"log"
 )
 
-func requestQuote(symbol string) func(pb.QuoteServiceClient, context.Context) (*Quote, error) {
-	return func(client pb.QuoteServiceClient, context context.Context) (*Quote, error) {
-		r, err := client.GetQuote(context, &pb.QuoteRequest{Symbol: symbol})
+func requestQuote(symbol string) func(quote.QuoteServiceClient, context.Context) (*Quote, error) {
+	return func(client quote.QuoteServiceClient, context context.Context) (*Quote, error) {
+		r, err := client.GetQuote(context, &quote.QuoteRequest{Symbol: symbol})
 		if err != nil {
 			responseStatus, ok := status.FromError(err)
 			if ok && responseStatus.Code() == codes.NotFound {
 				return nil, nil
 			}
-			log.Fatalf("could not request pb: %v", err)
+			log.Printf("could not request pb: %v\n", err)
 			return nil, err
 		}
 
@@ -26,14 +26,14 @@ func requestQuote(symbol string) func(pb.QuoteServiceClient, context.Context) (*
 	}
 }
 
-func setupClient(addr string) (pb.QuoteServiceClient, context.Context, func()) {
+func setupClient(addr string) (quote.QuoteServiceClient, context.Context, func()) {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Printf("did not connect: %v\n", err)
 	}
 
-	c := pb.NewQuoteServiceClient(conn)
+	c := quote.NewQuoteServiceClient(conn)
 
 	// Contact the server.
 	ctx, cancel := context.WithCancel(context.Background())
@@ -44,11 +44,11 @@ func setupClient(addr string) (pb.QuoteServiceClient, context.Context, func()) {
 }
 
 type QuoteService struct {
-	Address string
+	ProviderAddress string
 }
 
 func (service QuoteService) GetQuote(symbol string) (*Quote, error) {
-	client, ctx, cancel := setupClient(service.Address)
+	client, ctx, cancel := setupClient(service.ProviderAddress)
 	defer cancel()
 	return requestQuote(symbol)(client, ctx)
 }

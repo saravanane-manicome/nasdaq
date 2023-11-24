@@ -7,12 +7,12 @@ import (
 )
 
 func main() {
-	address := flag.String("address", "localhost:50051", "the address to connect to")
+	providerAddress := flag.String("provider", "localhost:50051", "the address of the provider")
 	flag.Parse()
 
 	quoteController := controller.QuoteController{
 		QuoteService: service.QuoteService{
-			Address: *address,
+			ProviderAddress: *providerAddress,
 		},
 	}
 

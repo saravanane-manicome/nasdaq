@@ -1,0 +1,38 @@
+FROM golang as base
+
+RUN apt-get update
+RUN apt-get install unzip
+
+ENV PROTOC_ZIP=protoc-25.1-linux-x86_32.zip
+RUN curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v25.1/${PROTOC_ZIP}
+RUN unzip -o ${PROTOC_ZIP} -d ./proto
+RUN chmod 755 -R ./proto/bin
+ENV BASE=/usr/local
+
+# Copy into path
+RUN cp ./proto/bin/protoc ${BASE}/bin
+RUN cp -R ./proto/include/* ${BASE}/include
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
+
+FROM base
+
+ENV PROVIDER_PORT=50051
+
+EXPOSE $PROVIDER_PORT
+
+WORKDIR /app
+COPY ./provider/ ./
+
+RUN mkdir ./protobuf
+COPY ./proto/ ./protobuf/
+
+RUN protoc --go_out ./protobuf --go-grpc_out ./protobuf ./protobuf/*.proto
+
+RUN go mod tidy
+
+RUN go build -o /nasdaq-provider
+RUN chmod 755 /nasdaq-provider
+CMD ["sh", "-c", "/nasdaq-provider --port $PROVIDER_PORT"]

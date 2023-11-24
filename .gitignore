@@ -5,3 +5,6 @@
 /**/go.work.sum
 
 /**/*.pb.go
+
+./provider/protobuf
+./rest/protobuf

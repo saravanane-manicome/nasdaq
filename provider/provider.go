@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	pb "github.com/saravanane-manicome/nasdaq/provider/protobuf/quote"
 	"github.com/saravanane-manicome/nasdaq/provider/service"
-	pb "github.com/saravanane-manicome/nasdaq/quote"
 	"google.golang.org/grpc"
 	"log"
 	"net"

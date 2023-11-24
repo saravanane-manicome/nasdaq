@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	pb "github.com/saravanane-manicome/nasdaq/quote"
+	"github.com/saravanane-manicome/nasdaq/provider/protobuf/quote"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -11,10 +11,10 @@ import (
 
 type QuoteProviderService struct {
 	Symbols map[string]float64
-	pb.UnimplementedQuoteServiceServer
+	quote.UnimplementedQuoteServiceServer
 }
 
-func (quoteProviderService *QuoteProviderService) GetQuote(_ context.Context, in *pb.QuoteRequest) (*pb.QuoteReply, error) {
+func (quoteProviderService *QuoteProviderService) GetQuote(_ context.Context, in *quote.QuoteRequest) (*quote.QuoteReply, error) {
 	log.Printf("received pb request for symbol %s", in.GetSymbol())
 	symbol := in.GetSymbol()
 	q, exists := quoteProviderService.requestQuote(symbol)
@@ -22,7 +22,7 @@ func (quoteProviderService *QuoteProviderService) GetQuote(_ context.Context, in
 	if !exists {
 		return nil, status.Error(codes.NotFound, "symbol not registered")
 	}
-	return &pb.QuoteReply{Symbol: symbol, Quote: q}, nil
+	return &quote.QuoteReply{Symbol: symbol, Quote: q}, nil
 }
 
 /*

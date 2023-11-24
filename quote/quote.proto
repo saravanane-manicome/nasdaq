@@ -13,5 +13,4 @@ message QuoteRequest {
 message QuoteReply {
   string symbol = 1;
   double quote = 2;
-  bool exists = 3;
 }

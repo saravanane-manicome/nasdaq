@@ -23,30 +23,35 @@ type QuoteController struct {
 
 func (controller *QuoteController) Serve() {
 	r := gin.Default()
-	r.GET("/quote", func(context *gin.Context) {
-		var q quoteQuery
-		if err := context.ShouldBindWith(&q, binding.Query); err != nil {
-			context.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
 
-		quote, err := controller.QuoteService.GetQuote(q.Symbol)
-		if err != nil {
-			context.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+	r.GET("/quote", controller.getQuote)
 
-		if !quote.Exists {
-			context.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
-		response := QuoteResponse{quote.Symbol, quote.Quote}
-
-		context.JSON(http.StatusOK, response)
-	})
 	err := r.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (controller *QuoteController) getQuote(context *gin.Context) {
+	var q quoteQuery
+	if err := context.ShouldBindWith(&q, binding.Query); err != nil {
+		context.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	quote, err := controller.QuoteService.GetQuote(q.Symbol)
+
+	if err != nil {
+		context.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if quote == nil {
+		context.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	response := QuoteResponse{quote.Symbol, quote.Quote}
+
+	context.JSON(http.StatusOK, response)
 }

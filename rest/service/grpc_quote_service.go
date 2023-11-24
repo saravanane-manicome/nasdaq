@@ -4,7 +4,9 @@ import (
 	"context"
 	pb "github.com/saravanane-manicome/nasdaq/quote"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"log"
 )
 
@@ -12,11 +14,15 @@ func requestQuote(symbol string) func(pb.QuoteServiceClient, context.Context) (*
 	return func(client pb.QuoteServiceClient, context context.Context) (*Quote, error) {
 		r, err := client.GetQuote(context, &pb.QuoteRequest{Symbol: symbol})
 		if err != nil {
+			responseStatus, ok := status.FromError(err)
+			if ok && responseStatus.Code() == codes.NotFound {
+				return nil, nil
+			}
 			log.Fatalf("could not request pb: %v", err)
 			return nil, err
 		}
 
-		return &Quote{r.GetSymbol(), r.GetQuote(), r.GetExists()}, nil
+		return &Quote{r.GetSymbol(), r.GetQuote()}, nil
 	}
 }
 
